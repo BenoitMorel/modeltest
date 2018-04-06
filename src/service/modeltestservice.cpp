@@ -543,6 +543,7 @@ void ModelTestService::finalize()
     s_instance = 0;
 
     #if(MPI_ENABLED)
+    if (s_owns_mpi_context)
         MPI_Finalize();
     #endif
 }

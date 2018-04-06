@@ -42,6 +42,7 @@ class ModelTestService
       modeltest_instance = 0;
   }
   static ModelTestService *s_instance;
+  static bool s_owns_mpi_context;
 
 public:
   static ModelTestService *instance()
@@ -121,6 +122,8 @@ public:
   std::string get_phyml_command_line(modeltest::Model const& model,
                       const std::string &msa_filename = "MSA_FILENAME") const;
 
+
+  static void set_owns_mpi_context(bool owns_mpi_context) {s_owns_mpi_context = owns_mpi_context;}
 //public:
 //    ModelTestService(ModelTestService const&) = delete;
 //    void operator=(ModelTestService const&)   = delete;

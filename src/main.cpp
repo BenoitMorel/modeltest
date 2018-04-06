@@ -60,15 +60,27 @@ MPI_Comm master_mpi_comm;
 
 #define FANCY_GUI
 
+#ifdef MODELTEST_BUILD_AS_LIB
+extern "C" int dll_main(int argc, char** argv, void* comm)
+#else
 int main(int argc, char *argv[])
+#endif
+
 {
 #if(MPI_ENABLED)
+
+#ifdef MODELTEST_BUILD_AS_LIB
+    master_mpi_comm = *((MPI_Comm*) comm);
+    ModelTestService::set_owns_mpi_context(false);
+#else
     MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &mpi_numprocs);
+    master_mpi_comm = MPI_COMM_WORLD;
+    ModelTestService::set_owns_mpi_context(true);
+#endif
+    MPI_Comm_rank(master_mpi_comm, &mpi_rank);
+    MPI_Comm_size(master_mpi_comm, &mpi_numprocs);
 
     /* so far, allow only for single-process tasks */
-    master_mpi_comm = MPI_COMM_WORLD;
 
     if (mpi_numprocs == 1)
     {
