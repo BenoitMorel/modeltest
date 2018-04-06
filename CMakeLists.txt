@@ -7,6 +7,9 @@ set (USE_PTHREADS ON CACHE BOOL "Enable multi-threading support (PTHREADS)")
 set (USE_MPI OFF CACHE BOOL "Enable MPI support")
 set (USE_GUI OFF CACHE BOOL "Enable QT GUI")
 
+set(USE_LIBPLL_CMAKE OFF CACHE BOOL "Use CMake to build libpll and pll-modules")
+set(BUILD_AS_LIBRARY OFF CACHE BOOL "Build model-test as shared library (instead of stand-alone executable)")
+
 # set both following options to OFF to build a portable binary 
 # (don't worry, libpll will still have full SIMD support!)
 set (ENABLE_MODELTEST_SIMD OFF CACHE BOOL "Enable SIMD instructions (non-portable but slightly faster)")
@@ -88,18 +91,12 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_NO_GUI_ ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 endif()
 
-if(ENABLE_MPI)
-  find_package(MPI)
-  if(MPI_CXX_FOUND)
-    set(CMAKE_CXX_COMPILER "${MPI_CXX_COMPILER}")
-    include_directories(${MPI_CXX_INCLUDE_PATH})
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MPI_CXX_COMPILER_FLAGS} -DBUILD_MPI")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MPI_CXX_LINK_FLAGS}")
-
-    # disable static build for MPI
-    set(STATIC_BUILD OFF)
-  endif()
+if(BUILD_AS_LIBRARY)
+  # building shared library only works with CMake!
+  set(USE_LIBPLL_CMAKE ON)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_MODELTEST_BUILD_AS_LIB -fPIC")
 endif()
+
 
 message(STATUS "Using flags: ${CMAKE_CXX_FLAGS}")
 
@@ -113,5 +110,19 @@ set(MODELTEST_LOCALDEPS_DIR ${PROJECT_BINARY_DIR}/localdeps)
 add_subdirectory(${PROJECT_SOURCE_DIR}/libs)
 
 include_directories(${MODELTEST_LOCALDEPS_DIR}/include)
+
+
+if(ENABLE_MPI)
+  find_package(MPI)
+  if(MPI_CXX_FOUND)
+    set(CMAKE_CXX_COMPILER "${MPI_CXX_COMPILER}")
+    include_directories(${MPI_CXX_INCLUDE_PATH})
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MPI_CXX_COMPILER_FLAGS} -DBUILD_MPI")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MPI_CXX_LINK_FLAGS}")
+
+    # disable static build for MPI
+    set(STATIC_BUILD OFF)
+  endif()
+endif()
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/src)

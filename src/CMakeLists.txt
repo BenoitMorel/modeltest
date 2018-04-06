@@ -30,16 +30,40 @@ if(STATIC_BUILD)
   endif()
 endif()
 
-add_executable        (modeltest_module ${modeltest_sources})
+if (BUILD_AS_LIBRARY)
+  message(STATUS "Modeltest will be built as a library.")
+  add_library (modeltest_module MODULE ${modeltest_sources})
+else()
+  add_executable (modeltest_module ${modeltest_sources})
+endif()
 
-target_link_libraries (modeltest_module ${MODELTEST_LOCALDEPS_DIR}/lib/libpll_algorithm.a)
-target_link_libraries (modeltest_module ${MODELTEST_LOCALDEPS_DIR}/lib/libpll_binary.a)
-target_link_libraries (modeltest_module ${MODELTEST_LOCALDEPS_DIR}/lib/libpll_optimize.a)
-target_link_libraries (modeltest_module ${MODELTEST_LOCALDEPS_DIR}/lib/libpll_msa.a)
-target_link_libraries (modeltest_module ${MODELTEST_LOCALDEPS_DIR}/lib/libpll_tree.a)
-target_link_libraries (modeltest_module ${MODELTEST_LOCALDEPS_DIR}/lib/libpll_util.a)
-target_link_libraries (modeltest_module ${MODELTEST_LOCALDEPS_DIR}/lib/libpll.a)
+if (USE_LIBPLL_CMAKE)
+  target_include_directories(modeltest_module PRIVATE ${PLLMOD_EXPORTED_INCLUDE_PATH})
+  set(LIBPLL_LIBS  pllmodalgorithm_static
+                   pllmodbinary_static
+                   pllmodmsa_static
+                   pllmodoptimize_static
+                   pllmodtree_static
+                   pllmodutil_static
+                   pll_static
+                   )
+  target_link_libraries (modeltest_module ${LIBPLL_lIBS})
+else()
+  target_link_libraries (modeltest_module ${MODELTEST_LOCALDEPS_DIR}/lib/libpll_algorithm.a)
+  target_link_libraries (modeltest_module ${MODELTEST_LOCALDEPS_DIR}/lib/libpll_binary.a)
+  target_link_libraries (modeltest_module ${MODELTEST_LOCALDEPS_DIR}/lib/libpll_optimize.a)
+  target_link_libraries (modeltest_module ${MODELTEST_LOCALDEPS_DIR}/lib/libpll_msa.a)
+  target_link_libraries (modeltest_module ${MODELTEST_LOCALDEPS_DIR}/lib/libpll_tree.a)
+  target_link_libraries (modeltest_module ${MODELTEST_LOCALDEPS_DIR}/lib/libpll_util.a)
+  target_link_libraries (modeltest_module ${MODELTEST_LOCALDEPS_DIR}/lib/libpll.a)
+endif()
+
 target_link_libraries (modeltest_module m)
+
+if (BUILD_AS_LIBRARY AND NOT APPLE)
+  target_link_libraries(modeltest_module gcc_s gcc)
+endif()
+
 
 if(Qt5Widgets_FOUND)
 
