@@ -39,15 +39,13 @@ endif()
 
 if (USE_LIBPLL_CMAKE)
   target_include_directories(modeltest_module PRIVATE ${PLLMOD_EXPORTED_INCLUDE_PATH})
-  set(LIBPLL_LIBS  pllmodalgorithm_static
-                   pllmodbinary_static
-                   pllmodmsa_static
-                   pllmodoptimize_static
-                   pllmodtree_static
-                   pllmodutil_static
-                   pll_static
-                   )
-  target_link_libraries (modeltest_module ${LIBPLL_lIBS})
+  target_link_libraries (modeltest_module pllmodalgorithm_static)
+  target_link_libraries (modeltest_module pllmodbinary_static)
+  target_link_libraries (modeltest_module pllmodmsa_static)
+  target_link_libraries (modeltest_module pllmodoptimize_static)
+  target_link_libraries (modeltest_module pllmodtree_static)
+  target_link_libraries (modeltest_module pllmodutil_static)
+  target_link_libraries (modeltest_module pll_static)
 else()
   target_link_libraries (modeltest_module ${MODELTEST_LOCALDEPS_DIR}/lib/libpll_algorithm.a)
   target_link_libraries (modeltest_module ${MODELTEST_LOCALDEPS_DIR}/lib/libpll_binary.a)

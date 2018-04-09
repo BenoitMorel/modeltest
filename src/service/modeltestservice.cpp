@@ -29,6 +29,7 @@ using namespace modeltest;
 using namespace std;
 
 static string raxmlng_name(Model const& model);
+bool ModelTestService::s_owns_mpi_context = true;
 
 ModelTestService::~ModelTestService()
 {

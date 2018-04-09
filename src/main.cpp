@@ -60,7 +60,7 @@ MPI_Comm master_mpi_comm;
 
 #define FANCY_GUI
 
-#ifdef MODELTEST_BUILD_AS_LIB
+#ifdef _MODELTEST_BUILD_AS_LIB
 extern "C" int dll_main(int argc, char** argv, void* comm)
 #else
 int main(int argc, char *argv[])
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 {
 #if(MPI_ENABLED)
 
-#ifdef MODELTEST_BUILD_AS_LIB
+#ifdef _MODELTEST_BUILD_AS_LIB
     master_mpi_comm = *((MPI_Comm*) comm);
     ModelTestService::set_owns_mpi_context(false);
 #else
