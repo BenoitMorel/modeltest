@@ -37,7 +37,7 @@
 
 #ifdef BUILD_MPI
 #define MPI_ENABLED 1
-#define BARRIER MPI_Barrier(MPI_COMM_WORLD)
+#define BARRIER MPI_Barrier(master_mpi_comm)
 #else
 #define MPI_ENABLED 0
 #define BARRIER
