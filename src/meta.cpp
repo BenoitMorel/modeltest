@@ -109,7 +109,7 @@ bool Meta::parse_arguments(int argc, char *argv[], mt_options_t & exec_opt, mt_s
         { "msa-info", no_argument,           0, 12 },
         { 0, 0, 0, 0 }
     };
-
+    optind = 1;
     int opt = 0, long_index = 0;
     bool params_ok = true;
     while ((opt = getopt_long(argc, argv, "a:c:d:f:h:Hi:m:o:p:q:r:s:t:T:u:v", long_options,
