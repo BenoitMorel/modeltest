@@ -559,8 +559,10 @@ void ModelTestService::finalize( bool force )
       delete s_instance;
     s_instance = 0;
 
+    #if(MPI_ENABLED)
     if (s_owns_mpi_context)
       ParallelContext::finalize(force);
+    #endif
 }
 
 

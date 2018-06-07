@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     master_mpi_comm = *((MPI_Comm*) comm);
     ModelTestService::set_owns_mpi_context(false);
 #else
-    MPI_Init(&argc, &argv);
+    ParallelContext::init_mpi(argc, argv, 0);
     master_mpi_comm = MPI_COMM_WORLD;
     ModelTestService::set_owns_mpi_context(true);
 #endif
@@ -83,7 +83,6 @@ int main(int argc, char *argv[])
 
     /* so far, allow only for single-process tasks */
 
-    ParallelContext::init_mpi(argc, argv, 0);
 
     mpi_numprocs = ParallelContext::num_procs();
     mpi_rank = ParallelContext::proc_id();
