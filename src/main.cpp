@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
   ParallelContext::init_mpi(argc, argv, comm);
 #else
   master_mpi_comm = MPI_COMM_WORLD;
-    ParallelContext::init_mpi(argc, argv, 0);
+  ParallelContext::init_mpi(argc, argv, 0);
 #endif
 
     /* so far, allow only for single-process tasks */
