@@ -55,8 +55,9 @@ int mpi_numprocs;
 mt_size_t num_cores;
 
 static mt_size_t n_procs = 1;
+
 #if(MPI_ENABLED)
-MPI_Comm master_mpi_comm;
+  MPI_Comm master_mpi_comm;
 #endif
 
 #define FANCY_GUI
@@ -71,23 +72,19 @@ int main(int argc, char *argv[])
 #if(MPI_ENABLED)
 
 #ifdef _MODELTEST_BUILD_AS_LIB
-    master_mpi_comm = *((MPI_Comm*) comm);
-    ModelTestService::set_owns_mpi_context(false);
+  master_mpi_comm = *((MPI_Comm*) comm);
+  ParallelContext::init_mpi(argc, argv, comm);
 #else
-    MPI_Init(&argc, &argv);
-    master_mpi_comm = MPI_COMM_WORLD;
-    ModelTestService::set_owns_mpi_context(true);
+  master_mpi_comm = MPI_COMM_WORLD;
+    ParallelContext::init_mpi(argc, argv, 0);
 #endif
-    MPI_Comm_rank(master_mpi_comm, &mpi_rank);
-    MPI_Comm_size(master_mpi_comm, &mpi_numprocs);
 
     /* so far, allow only for single-process tasks */
 
-    ParallelContext::init_mpi(argc, argv, 0);
 
     mpi_numprocs = ParallelContext::num_procs();
     mpi_rank = ParallelContext::proc_id();
-
+    cout << mpi_numprocs << " --- " << mpi_rank << endl;
     if (mpi_numprocs == 1)
     {
       modeltest::Utils::exit_with_error("MPI version requires at least 2 processors");

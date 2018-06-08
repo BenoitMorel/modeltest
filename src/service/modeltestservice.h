@@ -30,7 +30,6 @@
 
 #include <string>
 #include <vector>
-
 /**
  * @brief Methods for accessing ModelTest background
  */
