@@ -1,0 +1,2 @@
+/opt/rh/devtoolset-6/root/usr/bin/ar qc libpllmodtree.a  CMakeFiles/pllmodtree_obj.dir/consensus.c.o CMakeFiles/pllmodtree_obj.dir/pll_tree.c.o CMakeFiles/pllmodtree_obj.dir/rtree_operations.c.o CMakeFiles/pllmodtree_obj.dir/tree_hashtable.c.o CMakeFiles/pllmodtree_obj.dir/treeinfo.c.o CMakeFiles/pllmodtree_obj.dir/utree_distances.c.o CMakeFiles/pllmodtree_obj.dir/utree_operations.c.o CMakeFiles/pllmodtree_obj.dir/split_utree.c.o CMakeFiles/pllmodtree_obj.dir/lex_split.c.o
+/opt/rh/devtoolset-6/root/usr/bin/ranlib libpllmodtree.a

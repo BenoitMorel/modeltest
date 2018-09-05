@@ -1,0 +1,2 @@
+/opt/rh/devtoolset-6/root/usr/bin/ar qc libpllmodbinary.a  CMakeFiles/pllmodbinary_obj.dir/__/pllmod_common.c.o CMakeFiles/pllmodbinary_obj.dir/binary_io_operations.c.o CMakeFiles/pllmodbinary_obj.dir/pll_binary.c.o
+/opt/rh/devtoolset-6/root/usr/bin/ranlib libpllmodbinary.a
