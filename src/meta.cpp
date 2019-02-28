@@ -57,12 +57,14 @@ bool Meta::parse_arguments(int argc, char *argv[], mt_options_t & exec_opt, mt_s
     data_type_t arg_datatype = dt_dna;
     mt_size_t freqs_mask = 0;
     bool gap_aware = false;
-    exec_opt.n_catg          = DEFAULT_GAMMA_RATE_CATS;
+    exec_opt.n_catg           = DEFAULT_GAMMA_RATE_CATS;
+    exec_opt.gamma_rates_mode = DEFAULT_GAMMA_RATE_MODE;
     exec_opt.epsilon_param   = DEFAULT_PARAM_EPSILON;
     exec_opt.epsilon_opt     = DEFAULT_OPT_EPSILON;
     exec_opt.rnd_seed        = DEFAULT_RND_SEED;
     exec_opt.model_params    = 0;
     exec_opt.compress_patterns = true;
+    exec_opt.keep_model_parameters = false;
     exec_opt.smooth_freqs    = false;
     exec_opt.rate_clustering = false;
     exec_opt.subst_schemes   = ss_undef;
@@ -84,8 +86,10 @@ bool Meta::parse_arguments(int argc, char *argv[], mt_options_t & exec_opt, mt_s
         { "gap-aware", no_argument,          0, 13 },
         { "input", required_argument,        0, 'i' },
         { "model-freqs", required_argument,  0, 'f' },
+        { "gamma-rates", required_argument,  0, 'g' },
         { "no-compress", no_argument,        0, 'H' },
         { "model-het", required_argument,    0, 'h' },
+        { "keep-params", no_argument,        0, 'k' },
         { "models", required_argument,       0, 'm' },
         { "output", required_argument,       0, 'o' },
         { "processes", required_argument,    0, 'p' },
@@ -112,7 +116,7 @@ bool Meta::parse_arguments(int argc, char *argv[], mt_options_t & exec_opt, mt_s
     optind = 1;
     int opt = 0, long_index = 0;
     bool params_ok = true;
-    while ((opt = getopt_long(argc, argv, "a:c:d:f:h:Hi:m:o:p:q:r:s:t:T:u:v", long_options,
+    while ((opt = getopt_long(argc, argv, "a:c:d:f:g:h:Hki:m:o:p:q:r:s:t:T:u:v", long_options,
                               &long_index)) != -1) {
         switch (opt) {
         case 0:
@@ -316,6 +320,23 @@ bool Meta::parse_arguments(int argc, char *argv[], mt_options_t & exec_opt, mt_s
                 }
             }
             break;
+        case 'g':
+            switch(optarg[0])
+            {
+            case 'a':
+            case 'A':
+                exec_opt.gamma_rates_mode = PLL_GAMMA_RATES_MEAN;
+                break;
+            case 'm':
+            case 'M':
+                exec_opt.gamma_rates_mode = PLL_GAMMA_RATES_MEDIAN;
+                break;
+            default:
+                LOG_ERR <<  PACKAGE << ": Unrecognised gamma rates mode " << optarg << endl;
+                LOG_ERR <<  setw(strlen(PACKAGE) + 2) << setfill(' ') << " " << "Should be either 'a' (average) or 'm' (median)" << endl;
+                params_ok = false;
+            }
+            break;
         case 'h':
             for (mt_index_t i=0; i<strlen(optarg); i++)
             {
@@ -350,6 +371,9 @@ bool Meta::parse_arguments(int argc, char *argv[], mt_options_t & exec_opt, mt_s
             break;
         case 'H':
             exec_opt.compress_patterns = false;
+            break;
+        case 'k':
+            exec_opt.keep_model_parameters = true;
             break;
         case 'i':
             exec_opt.msa_filename = optarg;
@@ -437,7 +461,7 @@ bool Meta::parse_arguments(int argc, char *argv[], mt_options_t & exec_opt, mt_s
             else
             {
                 LOG_ERR << PACKAGE << ": ERROR: Invalid starting topology " << optarg << endl;
-                LOG_ERR <<  setw(strlen(PACKAGE) + 2) << setfill(' ') << " " << "Should be one of {mp,mp,fixed-ml-gtr,fixed-ml-jc,random,user}" << endl;
+                LOG_ERR <<  setw(strlen(PACKAGE) + 2) << setfill(' ') << " " << "Should be one of {ml,mp,fixed-ml-gtr,fixed-ml-jc,random,user}" << endl;
                 params_ok = false;
             }
             break;
@@ -752,6 +776,8 @@ bool Meta::parse_arguments(int argc, char *argv[], mt_options_t & exec_opt, mt_s
 
         bool edit_mode = !user_candidate_models.substr(0,1).compare("-")
                       || !user_candidate_models.substr(0,1).compare("+");
+        char action = '+';
+
         if(edit_mode)
         {
           for (int i=0; i<N_PROT_MODEL_MATRICES; i++)
@@ -768,11 +794,20 @@ bool Meta::parse_arguments(int argc, char *argv[], mt_options_t & exec_opt, mt_s
         string s;
         while (getline(f, s, ',')) {
             mt_index_t i, c_matrix = 0;
-            char action = '+';
             if (edit_mode)
             {
-              action = s.c_str()[0];
-              s = s.substr(1);
+              char cur_action = s.c_str()[0];
+              if (!(cur_action == '+' || cur_action == '-'))
+              {
+                LOG_ERR << PACKAGE
+                        << ": Warning: Undefined action {+,-} for model " << s
+                        << ". Using previous action: " << action <<  endl;
+              }
+              else
+              {
+                action = cur_action;
+                s = s.substr(1);
+              }
             }
 
             for (i=0; i<N_PROT_MODEL_ALL_MATRICES; i++)
@@ -1450,13 +1485,17 @@ void Meta::print_help(std::ostream& out)
     out << setw(MAX_OPT_LENGTH) << left << "  -h, --model-het [uigf]"
         << "sets the candidate models rate heterogeneity" << endl;
     out << setw(MAX_OPT_LENGTH) << left << " "
-        << "u: uniform" << endl;
+        << "u: *uniform" << endl;
     out << setw(MAX_OPT_LENGTH) << left << " "
-        << "i: proportion of invariant sites (+I)" << endl;
+        << "i: *proportion of invariant sites (+I)" << endl;
     out << setw(MAX_OPT_LENGTH) << left << " "
-        << "g: discrite Gamma rate categories (+G)" << endl;
+        << "g: *discrite Gamma rate categories (+G)" << endl;
     out << setw(MAX_OPT_LENGTH) << left << " "
-        << "f: both +I and +G (+I+G)" << endl;
+        << "f: *both +I and +G (+I+G)" << endl;
+    out << setw(MAX_OPT_LENGTH) << left << " "
+        << "r: free rate models (+R)" << endl;
+    out << setw(MAX_OPT_LENGTH) << left << " "
+        << "* included by default" << endl;
 
     out << setw(MAX_OPT_LENGTH) << left << "  -m, --models list"
         << "sets the candidate model matrices separated by commas." << endl;
@@ -1556,6 +1595,17 @@ void Meta::print_help(std::ostream& out)
         << "sets the parameter optimization tolerance" << endl;
     out << setw(MAX_OPT_LENGTH) << left << "      --smooth-frequencies"
         << "forces frequencies smoothing" << endl;
+
+    out << setw(MAX_OPT_LENGTH) << left << "  -g, --gamma-rates [a|g]"
+        << "sets gamma rates mode" << endl;
+    out << setw(SHORT_OPT_LENGTH) << " " << setw(COMPL_OPT_LENGTH)
+        << "               a"
+        << "uses the average (or mean) per category (default)" << endl;
+    out << setw(SHORT_OPT_LENGTH) << " " << setw(COMPL_OPT_LENGTH)
+        << "               m"
+        << "uses the median per category" << endl;
+    out << setw(MAX_OPT_LENGTH) << left << "      --disable-checkpoint"
+        << "does not create checkpoint files" << endl;
     out << setw(MAX_OPT_LENGTH) << left << "  -H, --no-compress"
         << "disables pattern compression" << endl;
     out << setw(MAX_OPT_LENGTH) << left << " "

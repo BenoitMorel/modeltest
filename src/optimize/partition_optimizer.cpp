@@ -35,6 +35,8 @@ namespace modeltest
                                          TreePll & tree,
                                          part_opt_t opt_type,
                                          bool optimize_topology,
+                                         bool keep_model_parameters,
+                                         int gamma_rates,
                                          double epsilon_param,
                                          double epsilon_opt) :
     partition(partition),
@@ -42,6 +44,8 @@ namespace modeltest
     tree(tree),
     opt_type(opt_type),
     optimize_topology(optimize_topology),
+    keep_model_parameters(keep_model_parameters),
+    gamma_rates(gamma_rates),
     epsilon_param(epsilon_param),
     epsilon_opt(epsilon_opt)
   {
@@ -379,6 +383,8 @@ BARRIER;
         ModelOptimizer * mopt = new ModelOptimizerPll(msa, tree, model,
                                                       partition,
                                                       optimize_topology,
+                                                      keep_model_parameters,
+                                                      gamma_rates,
                                                       thread_number);
         assert(mopt);
 
